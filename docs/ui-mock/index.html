@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="claude:viewport-fit-sides" content="cover">
+<title>auth-lab UI Mock</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="assets/mock.css">
+</head>
+<body>
+<header class="mockbar">
+  <div class="mockbar__crumb"><strong class="mono">auth-lab / mock</strong></div>
+  <nav class="mockbar__states" aria-label="Docs">
+    <a class="chip" href="index.html" aria-pressed="true" style="text-decoration:none">Screens</a>
+    <a class="chip" href="roadmap.html" style="text-decoration:none">Roadmap</a>
+    <a class="chip" href="data-model.html" style="text-decoration:none">Data model</a>
+  </nav>
+  <button class="theme-toggle" type="button">Theme</button>
+</header>
+
+<main class="doc">
+  <div class="doc__hero">
+    <span class="eyebrow">UI mock · plain HTML · v0.1</span>
+    <h1>Every screen of auth-lab, before any framework</h1>
+    <p>Each page shows the screen on the left and the developer spec on the right: endpoint, what the backend stores, security rules, ASVS rows. Use the chips in the top bar to switch between states such as error, loading and success.</p>
+  </div>
+
+  <section>
+    <h2>How to read a screen</h2>
+    <div class="legend">
+      <span><span class="tag">F2</span> feature slice in the roadmap</span>
+      <span><span class="tag">AUTH-04</span> row in <code>docs/security/asvs-matrix.md</code></span>
+      <span><span class="tag tag--open">O7</span> open decision</span>
+      <span><span class="tag tag--gap">new</span> not in the docs yet</span>
+    </div>
+  </section>
+
+  <section>
+    <h2>F1 · Register &amp; verify email</h2>
+    <div class="screens">
+      <a class="screen-link" href="register.html"><span class="screen-link__route">/register</span><span class="screen-link__title">Create account</span><span class="screen-link__desc">Name, email, password with breach check. Same response for new and existing emails.</span><span class="screen-link__foot"><span class="badge">4 states</span></span></a>
+      <a class="screen-link" href="verify-email.html"><span class="screen-link__route">/verify-email</span><span class="screen-link__title">Verify email (OTP)</span><span class="screen-link__desc">6-digit code, attempt cap, resend cooldown.</span><span class="screen-link__foot"><span class="badge">5 states</span><span class="tag tag--open">O9</span></span></a>
+    </div>
+  </section>
+
+  <section>
+    <h2>F2 · Login &amp; session</h2>
+    <div class="screens">
+      <a class="screen-link" href="login.html"><span class="screen-link__route">/login</span><span class="screen-link__title">Sign in</span><span class="screen-link__desc">Generic failure, throttling, unverified, session expired.</span><span class="screen-link__foot"><span class="badge">6 states</span><span class="tag tag--open">O7</span></span></a>
+      <a class="screen-link" href="dashboard.html"><span class="screen-link__route">/</span><span class="screen-link__title">Home</span><span class="screen-link__desc">Profile from <code>/api/me</code>, recent activity, app-start refresh screen.</span><span class="screen-link__foot"><span class="badge">3 states</span></span></a>
+    </div>
+  </section>
+
+  <section>
+    <h2>F3 · Sessions &nbsp;·&nbsp; F5 · Change password</h2>
+    <div class="screens">
+      <a class="screen-link" href="account-security.html"><span class="screen-link__route">/account/security</span><span class="screen-link__title">Security settings</span><span class="screen-link__desc">Change password, device list, sign out one or all, MFA status.</span><span class="screen-link__foot"><span class="badge">5 states</span><span class="tag tag--gap">new</span></span></a>
+    </div>
+  </section>
+
+  <section>
+    <h2>F4 · Forgot / reset password</h2>
+    <div class="screens">
+      <a class="screen-link" href="forgot-password.html"><span class="screen-link__route">/forgot-password</span><span class="screen-link__title">Request reset</span><span class="screen-link__desc">Always "check your email".</span><span class="screen-link__foot"><span class="badge">2 states</span></span></a>
+      <a class="screen-link" href="reset-password.html"><span class="screen-link__route">/reset-password</span><span class="screen-link__title">Set new password</span><span class="screen-link__desc">Single-use link, signs out everywhere.</span><span class="screen-link__foot"><span class="badge">4 states</span></span></a>
+    </div>
+  </section>
+
+  <section>
+    <h2>F6 · Two-step verification (TOTP)</h2>
+    <div class="screens">
+      <a class="screen-link" href="mfa-setup.html"><span class="screen-link__route">/account/security/mfa</span><span class="screen-link__title">Set up two-step</span><span class="screen-link__desc">Re-auth, QR + manual key, recovery codes shown once.</span><span class="screen-link__foot"><span class="badge">3 steps</span></span></a>
+      <a class="screen-link" href="mfa-challenge.html"><span class="screen-link__route">/login/mfa</span><span class="screen-link__title">Two-step challenge</span><span class="screen-link__desc">Code from app or a recovery code.</span><span class="screen-link__foot"><span class="badge">3 states</span></span></a>
+    </div>
+  </section>
+
+  <section>
+    <h2>F7 · RBAC &amp; audit log</h2>
+    <div class="screens">
+      <a class="screen-link" href="admin-users.html"><span class="screen-link__route">/admin</span><span class="screen-link__title">Users &amp; audit log</span><span class="screen-link__desc">Role/status changes, revoke sessions, auth events.</span><span class="screen-link__foot"><span class="badge">2 views</span></span></a>
+    </div>
+  </section>
+
+  <section>
+    <h2>Shared</h2>
+    <div class="screens">
+      <a class="screen-link" href="errors.html"><span class="screen-link__route">403 · 404 · 429 · 500</span><span class="screen-link__title">Error pages</span><span class="screen-link__desc">Plus the shared error envelope for the contract.</span><span class="screen-link__foot"><span class="badge">5 states</span></span></a>
+      <a class="screen-link" href="emails.html"><span class="screen-link__route">mailpit</span><span class="screen-link__title">Email templates</span><span class="screen-link__desc">Verify code, already registered, reset link, password changed, new sign-in.</span><span class="screen-link__foot"><span class="badge">5 templates</span></span></a>
+    </div>
+  </section>
+
+  <section>
+    <h2>User journey</h2>
+    <div class="table-wrap panel">
+      <table>
+        <thead><tr><th>Journey</th><th>Screens in order</th></tr></thead>
+        <tbody>
+          <tr><td>New user</td><td><a href="register.html">Register</a> → <a href="emails.html#verify">email code</a> → <a href="verify-email.html">Verify</a> → <a href="login.html">Sign in</a> → <a href="dashboard.html">Home</a></td></tr>
+          <tr><td>Returning user</td><td><a href="dashboard.html#booting">app-start refresh</a> → <a href="dashboard.html">Home</a> (or <a href="login.html#expired">Sign in</a> if refresh fails)</td></tr>
+          <tr><td>With two-step</td><td><a href="login.html">Sign in</a> → <a href="mfa-challenge.html">Two-step</a> → <a href="dashboard.html">Home</a></td></tr>
+          <tr><td>Forgot password</td><td><a href="forgot-password.html">Request</a> → <a href="emails.html#reset">email link</a> → <a href="reset-password.html">Set new</a> → <a href="login.html">Sign in</a></td></tr>
+          <tr><td>Stolen refresh token</td><td>attacker refreshes → real user refreshes with old token → reuse detected → family revoked → <a href="login.html#expired">Sign in</a></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+</main>
+<script src="assets/mock.js"></script>
+</body>
+</html>
