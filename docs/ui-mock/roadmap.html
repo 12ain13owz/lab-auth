@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="claude:viewport-fit-sides" content="cover">
+<title>Roadmap · auth-lab mock</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="assets/mock.css">
+</head>
+<body>
+<header class="mockbar">
+  <div class="mockbar__crumb"><strong class="mono">auth-lab / mock</strong></div>
+  <nav class="mockbar__states" aria-label="Docs">
+    <a class="chip" href="index.html" style="text-decoration:none">Screens</a>
+    <a class="chip" href="roadmap.html" aria-pressed="true" style="text-decoration:none">Roadmap</a>
+    <a class="chip" href="data-model.html" style="text-decoration:none">Data model</a>
+  </nav>
+  <button class="theme-toggle" type="button">Theme</button>
+</header>
+
+<main class="doc">
+  <div class="doc__hero">
+    <span class="eyebrow">Proposal · replaces Steps 3–8 of docs/roadmap.md</span>
+    <h1>Feature-sliced roadmap</h1>
+    <p>Each feature goes through the full slice before the next one starts: contract, migration, Express, tests, then the Angular screen. Next.js, NestJS, Go and Python repeat the finished slices later against the same contract.</p>
+  </div>
+
+  <section>
+    <h2>Definition of done for every slice</h2>
+    <div class="lanes">
+      <div class="lane"><h4>1 · Contract</h4><ul><li>OpenAPI paths + error codes</li><li>Spectral lint passes</li></ul></div>
+      <div class="lane"><h4>2 · DB</h4><ul><li>Up + down migration</li><li>Applies to all 4 DBs</li></ul></div>
+      <div class="lane"><h4>3 · Express</h4><ul><li>Unit tests (services, policies)</li><li>Integration tests (repo + real Postgres)</li></ul></div>
+      <div class="lane"><h4>4 · Contract-e2e</h4><ul><li>Black-box HTTP suite green</li><li>Includes the abuse cases</li></ul></div>
+      <div class="lane"><h4>5 · Angular</h4><ul><li>Screen from this mock</li><li>Component tests + Playwright e2e</li></ul></div>
+      <div class="lane"><h4>6 · Close</h4><ul><li>ASVS rows updated</li><li>Commit to <code>develop</code></li></ul></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Slices</h2>
+
+    <article class="feature">
+      <div class="feature__id">F0</div>
+      <div class="feature__body">
+        <h3>Foundation</h3>
+        <p class="small muted">Current Steps 0–2, kept as is, plus the items below.</p>
+        <div class="lanes">
+          <div class="lane"><h4>Already planned</h4><ul><li>Repo skeleton, Taskfile, compose (postgres + mailpit)</li><li>api-express from template, web from settings</li><li>Import-boundary lint, storage ban</li></ul></div>
+          <div class="lane"><h4>Add</h4><ul><li>Contract: shared error envelope with <code>code</code> + <code>requestId</code> (<a href="errors.html">errors</a>)</li><li>Design tokens from <code>assets/mock.css</code> → Angular styles</li><li>Mailer adapter + mailpit test helper</li><li>Playwright set up in <code>tests/web-e2e</code></li></ul></div>
+        </div>
+      </div>
+    </article>
+
+    <article class="feature">
+      <div class="feature__id">F1</div>
+      <div class="feature__body">
+        <h3>Register &amp; verify email</h3>
+        <div class="tags"><span class="tag tag--open">O2 hashing</span><span class="tag tag--open">O5 e2e runner</span><span class="tag tag--open">O9 OTP vs link</span></div>
+        <div class="lanes">
+          <div class="lane"><h4>DB</h4><ul><li><code>users</code></li><li><code>email_otps</code></li><li><code>audit_log</code></li></ul></div>
+          <div class="lane"><h4>API</h4><ul><li>POST register</li><li>POST verify-email</li><li>POST verify-email/resend</li></ul></div>
+          <div class="lane"><h4>e2e must prove</h4><ul><li>Same 202 for existing email</li><li>Code single-use, 5-try cap</li><li>Breached password rejected</li></ul></div>
+          <div class="lane"><h4>Web</h4><ul><li><a href="register.html">register</a></li><li><a href="verify-email.html">verify-email</a></li></ul></div>
+        </div>
+      </div>
+    </article>
+
+    <article class="feature">
+      <div class="feature__id">F2</div>
+      <div class="feature__body">
+        <h3>Login, session, me, logout</h3>
+        <div class="tags"><span class="tag tag--open">O1 JWT alg</span><span class="tag tag--open">O7 throttling</span></div>
+        <div class="lanes">
+          <div class="lane"><h4>DB</h4><ul><li><code>sessions</code></li><li><code>refresh_tokens</code></li></ul></div>
+          <div class="lane"><h4>API</h4><ul><li>POST login / refresh / logout</li><li>GET me</li></ul></div>
+          <div class="lane"><h4>e2e must prove</h4><ul><li>No enumeration on login</li><li>Exact cookie attributes</li><li>429 after N failures</li></ul></div>
+          <div class="lane"><h4>Web</h4><ul><li><code>core/auth</code>: token store, interceptor, guard, initializer</li><li><a href="login.html">login</a>, <a href="dashboard.html">home</a></li></ul></div>
+        </div>
+      </div>
+    </article>
+
+    <article class="feature">
+      <div class="feature__id">F3</div>
+      <div class="feature__body">
+        <h3>Refresh rotation, sessions list, logout-all</h3>
+        <div class="tags"><span class="tag tag--open">O6 multi-tab</span></div>
+        <div class="lanes">
+          <div class="lane"><h4>DB</h4><ul><li>(uses F2 tables)</li></ul></div>
+          <div class="lane"><h4>API</h4><ul><li>Rotation + reuse detection</li><li>GET / DELETE me/sessions</li><li>POST logout-all</li></ul></div>
+          <div class="lane"><h4>e2e must prove</h4><ul><li>Replay of used token revokes family</li><li>Can't delete another user's session (404)</li></ul></div>
+          <div class="lane"><h4>Web</h4><ul><li>Single-flight refresh</li><li><a href="account-security.html">sessions panel</a></li></ul></div>
+        </div>
+      </div>
+    </article>
+
+    <article class="feature">
+      <div class="feature__id">F4</div>
+      <div class="feature__body">
+        <h3>Forgot / reset password</h3>
+        <div class="lanes">
+          <div class="lane"><h4>DB</h4><ul><li><code>password_reset_tokens</code></li></ul></div>
+          <div class="lane"><h4>API</h4><ul><li>POST forgot-password</li><li>POST reset-password</li></ul></div>
+          <div class="lane"><h4>e2e must prove</h4><ul><li>Same 202 for unknown email</li><li>Token single-use + expiry</li><li>All sessions revoked</li></ul></div>
+          <div class="lane"><h4>Web</h4><ul><li><a href="forgot-password.html">forgot</a>, <a href="reset-password.html">reset</a></li></ul></div>
+        </div>
+      </div>
+    </article>
+
+    <article class="feature">
+      <div class="feature__id">F5</div>
+      <div class="feature__body">
+        <h3>Change password &amp; security emails</h3>
+        <span class="tag tag--gap" style="align-self:flex-start">new: not in current roadmap</span>
+        <div class="lanes">
+          <div class="lane"><h4>API</h4><ul><li>POST me/password (needs current)</li></ul></div>
+          <div class="lane"><h4>e2e must prove</h4><ul><li>Wrong current → 400</li><li>Other sessions revoked, current kept</li></ul></div>
+          <div class="lane"><h4>Web</h4><ul><li><a href="account-security.html">password panel</a></li><li><a href="emails.html#changed">password-changed email</a></li></ul></div>
+        </div>
+      </div>
+    </article>
+
+    <article class="feature">
+      <div class="feature__id">F6</div>
+      <div class="feature__body">
+        <h3>Two-step verification (TOTP) + recovery codes</h3>
+        <div class="lanes">
+          <div class="lane"><h4>DB</h4><ul><li><code>users.mfa_*</code></li><li><code>mfa_recovery_codes</code></li></ul></div>
+          <div class="lane"><h4>API</h4><ul><li>me/reauth, me/mfa/setup, enable, disable</li><li>auth/mfa/verify</li></ul></div>
+          <div class="lane"><h4>e2e must prove</h4><ul><li>No session before MFA passes</li><li>Same TOTP step can't be reused</li><li>Recovery code single-use</li></ul></div>
+          <div class="lane"><h4>Web</h4><ul><li><a href="mfa-setup.html">setup</a>, <a href="mfa-challenge.html">challenge</a></li></ul></div>
+        </div>
+      </div>
+    </article>
+
+    <article class="feature">
+      <div class="feature__id">F7</div>
+      <div class="feature__body">
+        <h3>RBAC, admin, audit log viewer</h3>
+        <div class="lanes">
+          <div class="lane"><h4>DB</h4><ul><li><code>users.role</code>, <code>users.status</code></li></ul></div>
+          <div class="lane"><h4>API</h4><ul><li>admin/users, admin/audit</li></ul></div>
+          <div class="lane"><h4>e2e must prove</h4><ul><li>User token → 403 on every admin route</li><li>PATCH ignores/rejects extra fields</li></ul></div>
+          <div class="lane"><h4>Web</h4><ul><li>Role guard</li><li><a href="admin-users.html">admin</a></li></ul></div>
+        </div>
+      </div>
+    </article>
+
+    <article class="feature">
+      <div class="feature__id">F8</div>
+      <div class="feature__body">
+        <h3>Docker mode &amp; security hardening</h3>
+        <div class="lanes">
+          <div class="lane"><h4>Already planned</h4><ul><li>nginx, CSP, headers, compose profiles</li></ul></div>
+          <div class="lane"><h4>Add</h4><ul><li>OWASP ZAP baseline scan against :8080</li><li><code>npm audit</code> / <code>govulncheck</code> / <code>pip-audit</code></li><li>Secret scan (gitleaks)</li><li>Threat model page per feature</li></ul></div>
+        </div>
+      </div>
+    </article>
+
+    <article class="feature">
+      <div class="feature__id">F9+</div>
+      <div class="feature__body">
+        <h3>Second frontend and other backends</h3>
+        <span class="tag tag--gap" style="align-self:flex-start">Next.js is not in the docs yet</span>
+        <div class="lanes">
+          <div class="lane"><h4>Next.js</h4><ul><li>Repeat F1–F7 screens against api-express</li><li>Same-origin via <code>rewrites</code></li><li>Decide: client-only like Angular, or BFF with server-side session (new ADR)</li></ul></div>
+          <div class="lane"><h4>Backends</h4><ul><li>NestJS → Go → Python</li><li>Done when contract-e2e is green</li></ul></div>
+        </div>
+      </div>
+    </article>
+  </section>
+
+  <section>
+    <h2>Gaps found in the current docs</h2>
+    <div class="gaps">
+      <div class="gap-item"><span class="tag tag--gap">G1</span><div><strong>Next.js isn't mentioned</strong><p>AGENTS.md says "Angular (one app)". Add <code>apps/web-next</code> and an ADR on whether it is a pure SPA client or uses Next.js server features (BFF).</p></div></div>
+      <div class="gap-item"><span class="tag tag--gap">G2</span><div><strong>Email OTP vs verification link is undecided</strong><p>Docs say "verification token"; you said OTP. Proposed open item O9. OTP needs an attempt cap; a link needs a long random token.</p></div></div>
+      <div class="gap-item"><span class="tag tag--gap">G3</span><div><strong>No <code>sessions</code> table</strong><p>Device list and "sign out this device" need user agent, IP and last-used per refresh family. Put them on a <code>sessions</code> row instead of repeating on every token.</p></div></div>
+      <div class="gap-item"><span class="tag tag--gap">G4</span><div><strong>Missing endpoints</strong><p>resend verification, change password, list/revoke sessions, re-auth, MFA setup/verify, admin. The Step 1 contract only lists 8 endpoints.</p></div></div>
+      <div class="gap-item"><span class="tag tag--gap">G5</span><div><strong>Test strategy covers contract-e2e only</strong><p>No mention of BE unit/integration tests, Angular component tests or browser e2e (Playwright). Add a testing section per app.</p></div></div>
+      <div class="gap-item"><span class="tag tag--gap">G6</span><div><strong>Roadmap is layered at Steps 3–4</strong><p>Step 3 builds register + login in Express before any FE. The slices above match your "BE then FE right away" rule.</p></div></div>
+      <div class="gap-item"><span class="tag tag--gap">G7</span><div><strong>Email pipeline isn't designed</strong><p>Templates, sending after commit, timing leaks, security notification emails, link origin from env.</p></div></div>
+      <div class="gap-item"><span class="tag tag--gap">G8</span><div><strong>Security testing tools aren't in the plan</strong><p>ZAP baseline, dependency audit and secret scanning fit F8. The ASVS matrix also lacks rows for session list, re-auth and MFA replay.</p></div></div>
+      <div class="gap-item"><span class="tag tag--gap">G9</span><div><strong>Account lifecycle</strong><p>Email change and account deletion aren't covered. Suggest marking them out of scope for v1 so they're a conscious choice.</p></div></div>
+    </div>
+  </section>
+</main>
+<script src="assets/mock.js"></script>
+</body>
+</html>

@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="claude:viewport-fit-sides" content="cover">
+<title>Set up two-step · auth-lab mock</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="assets/mock.css">
+</head>
+<body>
+<header class="mockbar">
+  <div class="mockbar__crumb"><a href="index.html">auth-lab / mock</a><span>/</span><strong>Set up two-step</strong><span class="mono">/account/security/mfa</span></div>
+  <div class="mockbar__states" role="group" aria-label="Screen state">
+    <button class="chip" type="button" data-set-state="reauth">1-password</button>
+    <button class="chip" type="button" data-set-state="scan">2-scan</button>
+    <button class="chip" type="button" data-set-state="codes">3-recovery-codes</button>
+  </div>
+  <button class="theme-toggle" type="button">Theme</button>
+</header>
+
+<main class="stage">
+  <div class="canvas canvas--shell">
+    <div class="shell">
+      <div class="topnav">
+        <a class="brand" href="dashboard.html"><span class="brand__mark">al</span>auth-lab</a>
+        <nav aria-label="Main">
+          <a href="dashboard.html">Home</a>
+          <a href="account-security.html" aria-current="page">Security</a>
+        </nav>
+        <div class="usermenu"><span class="avatar" aria-hidden="true">SK</span><span>Somchai K.</span></div>
+      </div>
+
+      <div class="page" style="max-width:560px">
+        <div class="page__head">
+          <a class="small" href="account-security.html">← Security</a>
+          <h1>Turn on two-step verification</h1>
+          <p>Step <span data-show="reauth">1</span><span data-show="scan">2</span><span data-show="codes">3</span> of 3</p>
+        </div>
+
+        <section class="panel" data-show="reauth">
+          <div class="panel__body">
+            <p>Confirm it's you before changing sign-in settings.</p>
+            <form novalidate>
+              <div class="field">
+                <label for="pw">Password</label>
+                <input id="pw" type="password" autocomplete="current-password" value="correct horse battery">
+              </div>
+              <div><button class="btn btn--primary" type="submit">Continue</button></div>
+            </form>
+          </div>
+        </section>
+
+        <section class="panel" data-show="scan">
+          <div class="panel__body">
+            <p>Scan this QR code with your authenticator app, then enter the 6-digit code it shows.</p>
+            <div class="row" style="align-items:flex-start;justify-content:flex-start;gap:20px">
+              <svg class="qr" viewBox="0 0 21 21" role="img" aria-label="QR code (placeholder)">
+                <rect width="21" height="21" fill="#fff"/>
+                <g fill="#142026">
+                  <path d="M0 0h7v7H0zM1 1v5h5V1zM2 2h3v3H2z"/>
+                  <path d="M14 0h7v7h-7zM15 1v5h5V1zM16 2h3v3h-3z"/>
+                  <path d="M0 14h7v7H0zM1 15v5h5v-5zM2 16h3v3H2z"/>
+                  <path d="M8 0h1v1H8zM10 1h2v1h-2zM8 2h1v2H8zM11 3h1v1h-1zM9 5h2v1H9zM12 6h1v2h-1zM8 8h3v1H8zM0 8h2v1H0zM3 9h2v1H3zM6 8h1v2H6zM14 8h2v1h-2zM17 9h1v1h-1zM19 8h2v1h-2zM9 10h1v2H9zM11 11h3v1h-3zM15 10h1v3h-1zM18 11h3v1h-3zM1 11h2v1H1zM4 12h2v1H4zM8 13h2v1H8zM12 13h1v2h-1zM17 13h2v1h-2zM8 15h1v3H8zM10 16h3v1h-3zM14 15h2v1h-2zM17 16h1v2h-1zM19 15h2v1h-2zM10 18h1v3h-1zM12 19h3v1h-3zM16 19h1v2h-1zM18 18h3v1h-3zM20 20h1v1h-1z"/>
+                </g>
+              </svg>
+              <div class="stack" style="gap:8px;min-width:0;flex:1">
+                <span class="small muted">Can't scan? Enter this key manually:</span>
+                <span class="secret">JBSW Y3DP EHPK 3PXP KQ7M</span>
+              </div>
+            </div>
+            <form novalidate>
+              <div class="otp" aria-label="Code from app">
+                <input id="s-1" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="1" aria-label="Digit 1">
+                <input id="s-2" type="text" inputmode="numeric" maxlength="1" aria-label="Digit 2">
+                <input id="s-3" type="text" inputmode="numeric" maxlength="1" aria-label="Digit 3">
+                <input id="s-4" type="text" inputmode="numeric" maxlength="1" aria-label="Digit 4">
+                <input id="s-5" type="text" inputmode="numeric" maxlength="1" aria-label="Digit 5">
+                <input id="s-6" type="text" inputmode="numeric" maxlength="1" aria-label="Digit 6">
+              </div>
+              <div><button class="btn btn--primary" type="submit">Verify and turn on</button></div>
+            </form>
+          </div>
+        </section>
+
+        <section class="panel" data-show="codes">
+          <div class="panel__body">
+            <div class="alert alert--ok" role="status">
+              <span class="alert__icon" aria-hidden="true">✓</span>
+              <div><strong>Two-step verification is on.</strong>Save these recovery codes now.</div>
+            </div>
+            <p class="small">If you lose your phone, each code below lets you sign in once. <strong>They won't be shown again.</strong></p>
+            <div class="codes" aria-label="Recovery codes">
+              <span>k7qm-2xpd</span><span>h3ns-9rtw</span>
+              <span>p8vb-4ckz</span><span>w2yt-6mfa</span>
+              <span>d5gx-1qjr</span><span>r9le-7suh</span>
+              <span>m4zc-3bnv</span><span>t6aw-8kpe</span>
+              <span>c1fy-5hdo</span><span>x0ju-2rgi</span>
+            </div>
+            <div class="row" style="justify-content:flex-start;gap:8px">
+              <button class="btn btn--secondary btn--sm" type="button">Copy codes</button>
+              <button class="btn btn--secondary btn--sm" type="button">Download .txt</button>
+            </div>
+            <label class="check"><input id="saved" type="checkbox"> <span>I've saved my recovery codes somewhere safe.</span></label>
+            <div><a class="btn btn--primary" href="account-security.html#mfa-on">Done</a></div>
+          </div>
+        </section>
+      </div>
+    </div>
+  </div>
+
+  <aside class="spec" aria-label="Developer notes">
+    <section>
+      <h2>Feature</h2>
+      <div class="tags"><span class="tag">F6 · MFA (TOTP)</span></div>
+    </section>
+    <section>
+      <h2>API</h2>
+      <div class="endpoint"><span class="method">POST</span><span>/api/me/reauth</span></div>
+      <div class="endpoint"><span class="method">POST</span><span>/api/me/mfa/setup</span></div>
+      <div class="endpoint"><span class="method">POST</span><span>/api/me/mfa/enable</span></div>
+      <pre>setup  → { otpauthUri, secret }     // pending, not active yet
+enable { code } → { recoveryCodes: [10] }  // shown once
+→ 400 { code: "MFA_INVALID" }</pre>
+    </section>
+    <section>
+      <h2>Backend stores</h2>
+      <ul>
+        <li><code>users.mfa_secret_enc</code>: <strong>encrypted</strong> (AES-GCM, key from env). It must be readable to verify codes, so it can't be hashed.</li>
+        <li><code>users.mfa_enabled_at</code> set only after the first valid code</li>
+        <li><code>mfa_recovery_codes</code>: 10 × code_hash, used_at</li>
+        <li><code>sessions.reauth_at</code> for "password confirmed in last 5 min"</li>
+      </ul>
+    </section>
+    <section>
+      <h2>Security</h2>
+      <ul>
+        <li>Generate the QR on the client from <code>otpauthUri</code> (no third-party QR service: it would see the secret).</li>
+        <li>Secret + codes: <code>Cache-Control: no-store</code>.</li>
+        <li>Email alert "two-step verification turned on".</li>
+      </ul>
+    </section>
+    <section>
+      <h2>ASVS matrix</h2>
+      <div class="tags"><span class="tag">AUTH-09</span><span class="tag tag--gap">new: re-auth for sensitive actions</span></div>
+    </section>
+  </aside>
+</main>
+<script src="assets/mock.js"></script>
+</body>
+</html>

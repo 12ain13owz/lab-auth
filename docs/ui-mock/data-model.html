@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="claude:viewport-fit-sides" content="cover">
+<title>Data model · auth-lab mock</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="assets/mock.css">
+</head>
+<body>
+<header class="mockbar">
+  <div class="mockbar__crumb"><strong class="mono">auth-lab / mock</strong></div>
+  <nav class="mockbar__states" aria-label="Docs">
+    <a class="chip" href="index.html" style="text-decoration:none">Screens</a>
+    <a class="chip" href="roadmap.html" style="text-decoration:none">Roadmap</a>
+    <a class="chip" href="data-model.html" aria-pressed="true" style="text-decoration:none">Data model</a>
+  </nav>
+  <button class="theme-toggle" type="button">Theme</button>
+</header>
+
+<main class="doc">
+  <div class="doc__hero">
+    <span class="eyebrow">Proposal for Step 2 · PostgreSQL</span>
+    <h1>What the backend stores</h1>
+    <p>Derived from the screens. Each table lists the feature that introduces it, so every migration lands with its slice. Secrets are hashed when they only need comparing, and encrypted when they must be read back.</p>
+  </div>
+
+  <section>
+    <h2>Rules for every secret</h2>
+    <div class="table-wrap panel">
+      <table>
+        <thead><tr><th>Value</th><th>Stored as</th><th>Why</th></tr></thead>
+        <tbody>
+          <tr><td>Password</td><td class="mono">argon2id</td><td>Slow, memory-hard; low-entropy input (O2)</td></tr>
+          <tr><td>Refresh / reset token</td><td class="mono">SHA-256</td><td>≥ 256-bit random input, so a fast hash is enough</td></tr>
+          <tr><td>Email OTP, recovery code</td><td class="mono">HMAC-SHA256 (server key)</td><td>Low entropy: plain SHA-256 of 6 digits is brute-forced instantly if the DB leaks</td></tr>
+          <tr><td>TOTP secret</td><td class="mono">AES-256-GCM</td><td>Must be read back to verify codes</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <h2>Tables</h2>
+
+    <div class="entity">
+      <div class="entity__head"><h3>users</h3><p>F1 · extended in F6, F7</p></div>
+      <div class="table-wrap"><table>
+        <tbody>
+          <tr><td>id</td><td>uuid pk</td><td>UUIDv7 (time-ordered) or v4</td></tr>
+          <tr><td>email</td><td>citext unique</td><td>Normalised (trim, lower-case)</td></tr>
+          <tr><td>display_name</td><td>varchar(50)</td><td>Escape on output</td></tr>
+          <tr><td>password_hash</td><td>text</td><td>Includes algorithm + params (PHC string)</td></tr>
+          <tr><td>status</td><td>enum</td><td><code>pending</code> · <code>active</code> · <code>disabled</code></td></tr>
+          <tr><td>role</td><td>enum</td><td><code>user</code> · <code>admin</code> (F7)</td></tr>
+          <tr><td>email_verified_at</td><td>timestamptz null</td><td></td></tr>
+          <tr><td>password_changed_at</td><td>timestamptz</td><td>Shown in UI; can invalidate older access tokens</td></tr>
+          <tr><td>failed_login_count</td><td>int</td><td>Per-account throttle (O7)</td></tr>
+          <tr><td>locked_until</td><td>timestamptz null</td><td>Cool-down, not permanent lock</td></tr>
+          <tr><td>mfa_secret_enc</td><td>bytea null</td><td>F6, encrypted</td></tr>
+          <tr><td>mfa_enabled_at</td><td>timestamptz null</td><td>F6</td></tr>
+          <tr><td>mfa_last_used_step</td><td>bigint null</td><td>F6, TOTP replay guard</td></tr>
+          <tr><td>last_login_at, created_at, updated_at</td><td>timestamptz</td><td></td></tr>
+        </tbody>
+      </table></div>
+    </div>
+
+    <div class="entity">
+      <div class="entity__head"><h3>email_otps</h3><p>F1 · <span class="tag tag--open">O9</span> rename to <code>email_verification_tokens</code> if you pick links</p></div>
+      <div class="table-wrap"><table>
+        <tbody>
+          <tr><td>id</td><td>uuid pk</td><td></td></tr>
+          <tr><td>user_id</td><td>uuid fk</td><td>on delete cascade</td></tr>
+          <tr><td>purpose</td><td>enum</td><td><code>verify_email</code> (later: <code>change_email</code>)</td></tr>
+          <tr><td>code_hash</td><td>bytea</td><td>HMAC</td></tr>
+          <tr><td>attempts</td><td>smallint</td><td>Max 5</td></tr>
+          <tr><td>expires_at</td><td>timestamptz</td><td>+10 min</td></tr>
+          <tr><td>consumed_at</td><td>timestamptz null</td><td>Single use</td></tr>
+          <tr><td>created_at</td><td>timestamptz</td><td>Resend cooldown check</td></tr>
+        </tbody>
+      </table></div>
+    </div>
+
+    <div class="entity">
+      <div class="entity__head"><h3>sessions</h3><p>F2 · <span class="tag tag--gap">new</span> = one refresh family</p></div>
+      <div class="table-wrap"><table>
+        <tbody>
+          <tr><td>id</td><td>uuid pk</td><td>Goes into the access token as <code>sid</code></td></tr>
+          <tr><td>user_id</td><td>uuid fk</td><td>Index</td></tr>
+          <tr><td>user_agent</td><td>text</td><td>Truncated, for the device list</td></tr>
+          <tr><td>ip</td><td>inet</td><td>Real client IP (trust proxy)</td></tr>
+          <tr><td>created_at</td><td>timestamptz</td><td></td></tr>
+          <tr><td>last_used_at</td><td>timestamptz</td><td>Updated on refresh</td></tr>
+          <tr><td>absolute_expires_at</td><td>timestamptz</td><td>Hard cap, no extension (SESS-06)</td></tr>
+          <tr><td>mfa_at, reauth_at</td><td>timestamptz null</td><td>F6, step-up</td></tr>
+          <tr><td>revoked_at</td><td>timestamptz null</td><td></td></tr>
+          <tr><td>revoked_reason</td><td>enum null</td><td><code>logout</code> · <code>logout_all</code> · <code>reuse_detected</code> · <code>password_changed</code> · <code>admin</code></td></tr>
+        </tbody>
+      </table></div>
+    </div>
+
+    <div class="entity">
+      <div class="entity__head"><h3>refresh_tokens</h3><p>F2 · rotation in F3</p></div>
+      <div class="table-wrap"><table>
+        <tbody>
+          <tr><td>id</td><td>uuid pk</td><td></td></tr>
+          <tr><td>session_id</td><td>uuid fk</td><td>The family</td></tr>
+          <tr><td>token_hash</td><td>bytea unique</td><td>Lookup by hash</td></tr>
+          <tr><td>expires_at</td><td>timestamptz</td><td>~7 days, never past session cap</td></tr>
+          <tr><td>used_at</td><td>timestamptz null</td><td>Set on rotation; used again → revoke session</td></tr>
+          <tr><td>replaced_by_id</td><td>uuid null</td><td>Chain for debugging / grace window (O6)</td></tr>
+          <tr><td>created_at</td><td>timestamptz</td><td></td></tr>
+        </tbody>
+      </table></div>
+    </div>
+
+    <div class="entity">
+      <div class="entity__head"><h3>password_reset_tokens</h3><p>F4</p></div>
+      <div class="table-wrap"><table>
+        <tbody>
+          <tr><td>id</td><td>uuid pk</td><td></td></tr>
+          <tr><td>user_id</td><td>uuid fk</td><td></td></tr>
+          <tr><td>token_hash</td><td>bytea unique</td><td></td></tr>
+          <tr><td>expires_at</td><td>timestamptz</td><td>+30 min</td></tr>
+          <tr><td>used_at</td><td>timestamptz null</td><td></td></tr>
+          <tr><td>requested_ip</td><td>inet</td><td></td></tr>
+          <tr><td>created_at</td><td>timestamptz</td><td></td></tr>
+        </tbody>
+      </table></div>
+    </div>
+
+    <div class="entity">
+      <div class="entity__head"><h3>mfa_recovery_codes</h3><p>F6</p></div>
+      <div class="table-wrap"><table>
+        <tbody>
+          <tr><td>id</td><td>uuid pk</td><td></td></tr>
+          <tr><td>user_id</td><td>uuid fk</td><td>Regenerate = delete all + insert 10</td></tr>
+          <tr><td>code_hash</td><td>bytea</td><td>HMAC</td></tr>
+          <tr><td>used_at</td><td>timestamptz null</td><td></td></tr>
+        </tbody>
+      </table></div>
+    </div>
+
+    <div class="entity">
+      <div class="entity__head"><h3>audit_log</h3><p>F1 · append-only</p></div>
+      <div class="table-wrap"><table>
+        <tbody>
+          <tr><td>id</td><td>bigint identity</td><td></td></tr>
+          <tr><td>event</td><td>text</td><td><code>register.requested</code>, <code>login.failed</code>, <code>refresh.reuse_detected</code>, …</td></tr>
+          <tr><td>user_id</td><td>uuid null</td><td>Null when the email is unknown</td></tr>
+          <tr><td>actor_id</td><td>uuid null</td><td>Admin who did it (F7)</td></tr>
+          <tr><td>session_id</td><td>uuid null</td><td></td></tr>
+          <tr><td>ip, user_agent</td><td>inet, text</td><td></td></tr>
+          <tr><td>metadata</td><td>jsonb</td><td>Never passwords, tokens, codes</td></tr>
+          <tr><td>created_at</td><td>timestamptz</td><td>Index (user_id, created_at desc)</td></tr>
+        </tbody>
+      </table></div>
+    </div>
+
+    <div class="entity">
+      <div class="entity__head"><h3>email_outbox</h3><p>Optional · F1</p></div>
+      <div class="table-wrap"><table>
+        <tbody>
+          <tr><td>id, to_email, template</td><td>…</td><td>Written in the same transaction as the change</td></tr>
+          <tr><td>payload</td><td>jsonb</td><td>Cleared after send (holds the plain code/link briefly)</td></tr>
+          <tr><td>status, attempts, sent_at</td><td>…</td><td>Worker sends to SMTP/mailpit and retries</td></tr>
+        </tbody>
+      </table></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Not in Postgres</h2>
+    <div class="table-wrap panel">
+      <table>
+        <tbody>
+          <tr><td>Access token</td><td>Stateless JWT; only <code>sid</code> links back to <code>sessions</code></td></tr>
+          <tr><td>Rate-limit counters</td><td>In-memory per process for now; Redis only if you run more than one instance</td></tr>
+          <tr><td>Signing &amp; encryption keys</td><td>Env / mounted file; key id (<code>kid</code>) in JWT header for rotation</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+</main>
+<script src="assets/mock.js"></script>
+</body>
+</html>

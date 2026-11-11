@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="claude:viewport-fit-sides" content="cover">
+<title>Home · auth-lab mock</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="assets/mock.css">
+</head>
+<body>
+<header class="mockbar">
+  <div class="mockbar__crumb"><a href="index.html">auth-lab / mock</a><span>/</span><strong>Home</strong><span class="mono">/</span></div>
+  <div class="mockbar__states" role="group" aria-label="Screen state">
+    <button class="chip" type="button" data-set-state="user">user</button>
+    <button class="chip" type="button" data-set-state="admin">admin</button>
+    <button class="chip" type="button" data-set-state="booting">app-start</button>
+  </div>
+  <button class="theme-toggle" type="button">Theme</button>
+</header>
+
+<main class="stage">
+  <div class="canvas canvas--shell">
+    <div class="shell" data-show="user admin">
+      <div class="topnav">
+        <a class="brand" href="dashboard.html"><span class="brand__mark">al</span>auth-lab</a>
+        <nav aria-label="Main">
+          <a href="dashboard.html" aria-current="page">Home</a>
+          <a href="account-security.html">Security</a>
+          <a href="admin-users.html" data-show="admin">Admin</a>
+        </nav>
+        <div class="usermenu">
+          <span class="avatar" aria-hidden="true">SK</span>
+          <span>Somchai K.</span>
+          <button class="btn btn--secondary btn--sm" type="button">Sign out</button>
+        </div>
+      </div>
+
+      <div class="page">
+        <div class="page__head">
+          <h1>Welcome back, Somchai</h1>
+          <p>Last sign-in 11 Nov 2026, 09:14 from Chrome on macOS · Bangkok</p>
+        </div>
+
+        <div class="alert alert--warn" role="status">
+          <span class="alert__icon" aria-hidden="true">!</span>
+          <div><strong>Two-step verification is off.</strong>Add an authenticator app so a stolen password isn't enough. <a href="mfa-setup.html">Turn on</a></div>
+        </div>
+
+        <div class="grid-2">
+          <section class="panel">
+            <div class="panel__head"><h2>Profile</h2><a class="small" href="account-security.html">Edit</a></div>
+            <div class="panel__body">
+              <dl class="kv">
+                <dt>Name</dt><dd>Somchai K.</dd>
+                <dt>Email</dt><dd>somchai@example.com <span class="badge badge--ok">Verified</span></dd>
+                <dt>Role</dt><dd><span class="badge" data-show="user">user</span><span class="badge badge--accent" data-show="admin">admin</span></dd>
+                <dt>Member since</dt><dd>8 Nov 2026</dd>
+              </dl>
+            </div>
+          </section>
+          <section class="panel">
+            <div class="panel__head"><h2>Security</h2><a class="small" href="account-security.html">Manage</a></div>
+            <div class="panel__body">
+              <dl class="kv">
+                <dt>Password</dt><dd>Changed 3 days ago</dd>
+                <dt>Two-step</dt><dd><span class="badge badge--warn">Off</span></dd>
+                <dt>Active sessions</dt><dd>3 devices</dd>
+                <dt>Recovery codes</dt><dd class="muted">—</dd>
+              </dl>
+            </div>
+          </section>
+        </div>
+
+        <section class="panel">
+          <div class="panel__head"><h2>Recent activity</h2><p>From your audit log</p></div>
+          <div class="list">
+            <div class="row"><div><div class="row__title">Signed in</div><div class="row__meta">Chrome on macOS · 171.96.x.x</div></div><span class="row__meta mono">11 Nov 09:14</span></div>
+            <div class="row"><div><div class="row__title">Password changed</div><div class="row__meta">Firefox on Windows · 171.96.x.x</div></div><span class="row__meta mono">08 Nov 21:40</span></div>
+            <div class="row"><div><div class="row__title">Failed sign-in attempt</div><div class="row__meta">Unknown device · 45.12.x.x</div></div><span class="row__meta mono">08 Nov 03:02</span></div>
+          </div>
+        </section>
+      </div>
+    </div>
+
+    <div class="canvas" data-show="booting">
+      <div class="auth-wrap center" style="padding-top:12vh">
+        <span class="brand" style="justify-content:center"><span class="brand__mark">al</span>auth-lab</span>
+        <div style="display:flex;justify-content:center;gap:10px;color:var(--muted)"><span class="spinner" aria-hidden="true"></span>Restoring your session…</div>
+      </div>
+    </div>
+  </div>
+
+  <aside class="spec" aria-label="Developer notes">
+    <section>
+      <h2>Feature</h2>
+      <div class="tags"><span class="tag">F2 · Login &amp; session</span></div>
+    </section>
+    <section>
+      <h2>API</h2>
+      <div class="endpoint"><span class="method method--get">GET</span><span>/api/me</span></div>
+      <div class="endpoint"><span class="method method--get">GET</span><span>/api/me/activity?limit=5</span></div>
+      <div class="endpoint"><span class="method">POST</span><span>/api/auth/refresh</span></div>
+      <div class="endpoint"><span class="method">POST</span><span>/api/auth/logout</span></div>
+      <pre>GET /api/me (Bearer)
+→ 200 { data: { id, email, displayName, role,
+        emailVerified, mfaEnabled, createdAt } }
+→ 401 → interceptor refreshes once, retries</pre>
+    </section>
+    <section>
+      <h2>"app-start" state</h2>
+      <ul>
+        <li>App initializer calls refresh before first render. Show this screen, not a flash of the login page.</li>
+        <li>Guard waits for the initializer to finish.</li>
+      </ul>
+    </section>
+    <section>
+      <h2>Security</h2>
+      <ul>
+        <li>Admin link is UX only. The admin API must check role server-side.</li>
+        <li>Activity shows a masked IP; full IP stays in the audit log.</li>
+        <li>Never return <code>password_hash</code>, <code>mfa_secret</code>, etc. Map entities to response DTOs explicitly.</li>
+      </ul>
+    </section>
+    <section>
+      <h2>ASVS matrix</h2>
+      <div class="tags"><span class="tag">SESS-01</span><span class="tag">AUTHZ-01</span><span class="tag">AUTHZ-02</span></div>
+    </section>
+  </aside>
+</main>
+<script src="assets/mock.js"></script>
+</body>
+</html>
